@@ -57,6 +57,7 @@ public class A02 {
 			return;
 		}
 		
+		
 		int tmp = s.length()>0 ? Integer.parseInt(s.substring(s.length()-1)) : 0;
 		for(int i=tmp;i<n;i++)
 		{
