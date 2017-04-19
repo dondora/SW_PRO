@@ -1,0 +1,126 @@
+
+/////// MST 가중치의 합 크루스칼
+
+// input
+//4
+//0 1 5 4
+//1 0 2 6
+//5 2 0 3
+//4 6 3 0
+//5
+//0 1 6 7 5
+//1 0 2 9 8
+//6 2 0 3 10
+//7 9 3 0 4
+//5 8 10 4 0
+
+#include <iostream> 
+using namespace std;
+
+int adjM[100][100];
+int Ed[100];
+int uv[100][2];
+int parent[100];
+int edgeNs;
+int N;
+int ans;
+
+
+int FindSet(int u)
+{
+	if (u == parent[u]) return u;
+	return FindSet(parent[u]);
+}
+
+void swapE(int i, int j)
+{
+	int t = Ed[i]; Ed[i] = Ed[j]; Ed[j] = t;
+	int t1 = uv[i][0];  uv[i][0] = uv[j][0]; uv[j][0] = t1;
+	t1 = uv[i][1];  uv[i][1] = uv[j][1]; uv[j][1] = t1;
+}
+
+int partition(int l, int r)
+{
+	int p = Ed[l];
+	int i = l, j = r;
+
+	while (i < j)
+	{
+		while (Ed[i] <= p) if (++i == r) break;
+		while (Ed[j] >= p) if (--j == l) break;
+
+		if (i < j) swapE(i, j);
+	}
+	swapE(l, j);
+
+	return j;
+}
+
+void sortEdges(int l, int r)
+{
+	int pivot;
+
+	if (l < r)
+	{
+		pivot = partition(l, r);
+		sortEdges(l, pivot - 1);
+		sortEdges(pivot + 1, r);
+	}
+}
+
+void init()
+{
+	for (int i = 0; i < 100; i++)
+		for (int j = 0; j < 100; j++)
+			adjM[i][j] = 0;
+
+	edgeNs =  ans = 0;
+}
+
+void input()
+{
+	cin >> N;
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
+			cin >> adjM[i][j];
+
+	for (int i = 0; i < N; ++i)
+		for (int j = i + 1; j < N; ++j)
+		{
+			Ed[edgeNs] = adjM[i][j];
+			uv[edgeNs][0] = i;
+			uv[edgeNs++][1] = j;
+		}
+}
+
+void main()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		init();
+		input();
+
+		sortEdges(0, edgeNs - 1);
+
+		for (int i = 0; i < N; ++i)
+			parent[i] = i;
+
+		int u, v, nS = 0;
+		for (int i = 0; i < edgeNs; ++i)
+		{
+			u = uv[i][0], v = uv[i][1];
+
+			if (FindSet(u) == FindSet(v)) continue;
+
+			parent[FindSet(u)] = FindSet(v);
+
+			ans += Ed[i];
+			if (nS++ == N - 1) break;
+		}
+
+		cout << ans << endl;
+	}
+}
+
+
+

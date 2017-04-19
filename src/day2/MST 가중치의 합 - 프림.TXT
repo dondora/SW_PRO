@@ -1,0 +1,76 @@
+
+/////// MST 가중치의 합 프림
+
+// input
+//4
+//0 1 5 4
+//1 0 2 6
+//5 2 0 3
+//4 6 3 0
+//5
+//0 1 6 7 5
+//1 0 2 9 8
+//6 2 0 3 10
+//7 9 3 0 4
+//5 8 10 4 0
+
+
+#include <iostream> 
+using namespace std;
+
+int adjM[11][11];
+bool selc[11];
+int cost[11];
+int N;
+int v, cnt, ans, min;
+
+
+void init()
+{
+	for (int i = 0; i < 11; i++)
+	{
+		for (int j = 0; j < 11; j++)
+			adjM[i][j] = 0;
+		selc[i] = 0;
+		cost[i] = 0x7fffffff;
+	}
+
+	cost[1] = cnt = ans = 0;
+}
+
+void input()
+{
+	cin >> N;
+	for (int i = 1; i <= N; i++)
+		for (int j = 1; j <= N; j++)
+			cin >> adjM[i][j];
+}
+
+void main()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		init();
+		input();
+
+		while (cnt++ < N)
+		{
+			min = 0x12345678;
+			for (int j = 1; j <= N; j++)
+				if (!selc[j] && cost[j] < min)
+					min = cost[v = j];
+
+			selc[v] = true;
+			ans += cost[v];
+
+			for (int j = 1; j <= N; j++)
+				if (!selc[j] && adjM[v][j] < cost[j])
+					cost[j] = adjM[v][j];
+		}
+
+		cout << ans << endl;
+	}
+}
+
+
+

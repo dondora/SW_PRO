@@ -1,0 +1,59 @@
+
+
+// 위상정렬 DFS
+//
+//5 4                 // 정점의 개수, 간선의 개수
+//1, 3, 3, 5, 2, 3, 4, 5 //간선의 리스트
+
+#include <iostream>
+using namespace std;
+
+int in[10][10];
+int cnt[10];
+int done[10];
+int n, e;
+
+void dfs(int a)
+{
+	for (int i = 0; i < cnt[a]; i++)
+	{
+		if (done[in[a][i]] == 0)	dfs(in[a][i]);
+	}
+
+	done[a] = 1;
+	cout << " " << a;
+}
+
+void find()
+{
+	for (int i = 1; i <= n; i++)
+	{
+		if (done[i] == 0)	dfs(i);
+	}
+}
+
+int main()
+{
+	cin >> n >> e;
+
+	for (int i = 0; i <= n; i++)
+	{
+		done[i] = cnt[i] = 0;
+	}
+
+	for (int i = 0; i < e; i++)
+	{
+		int a, b;
+		cin >> a >> b;
+
+		in[b][cnt[b]] = a;
+		cnt[b]++;
+	}
+
+	find();
+
+	cout << endl;
+
+	return 0;
+}
+

@@ -1,0 +1,68 @@
+//µµ±úºñ¾ð´ö
+
+#include <iostream>
+using namespace std;
+
+int M[102][102];
+int D[102][102];
+int N;
+
+void solve()
+{
+	int dx[] = { 0, 0, 1, -1 };
+	int dy[] = { 1, -1, 0, 0 };
+	int x, y, min, curx, cury;
+
+	D[1][1] = 0;
+
+	while (1)
+	{
+		min = 0x7FFFFFFF;
+		for (int i = 1; i <= N; i++)
+			for (int j = 1; j <= N; j++)
+				if (M[i][j] != -1 && D[i][j] < min)
+					min = D[i][j], curx = i, cury = j;
+
+		if (curx == N && cury == N) return;
+
+		M[curx][cury] = -1;
+
+		for (int i = 0; i < 4; i++)
+		{
+			x = curx + dx[i];
+			y = cury + dy[i];
+			if (M[x][y] == -1) continue;
+			if (D[x][y] > min + M[x][y]) D[x][y] = min + M[x][y];
+		}
+	}
+}
+
+int main()
+{
+	// cin >> N;
+
+	for (int tc = 1; tc <= 10; tc++)
+	{
+		cin >> N;
+
+		for (int i = 1; i <= N; i++)
+			for (int j = 1; j <= N; j++)
+			{
+				scanf("%1d", &M[i][j]);
+				D[i][j] = 0x7FFFFFFF;
+			}
+
+		solve();
+
+		cout << "#" << tc << " " << D[N][N] << endl;
+	}
+
+	return 0;
+}
+
+
+
+
+
+
+
