@@ -1,0 +1,79 @@
+//  모든 정점 경유 최단거리 - 가지치기
+
+
+#include <iostream>
+#include <time.h>
+using namespace std;
+
+int x[12], y[12];
+int D[12][12];
+int a[11];
+int ans, N, cnt;
+
+#define ABS(X) (((X) > 0) ? (X) : (X) * -1)
+#define getD(x1, x2, y1, y2) ABS(x1 - x2) + ABS(y1 - y2)
+
+void solve(int k, int d) // 공간트리깊이, 누적거리
+{
+	cnt++;
+
+	int c[10], selc[11] = { 0 }, ncand = 0;
+
+	if (k == N)
+	{
+		if (d + D[a[k]][N + 1] < ans) ans = d + D[a[k]][N + 1];
+	}
+	else
+	{
+		k++;
+
+		for (int i = 1; i < k; i++) selc[a[i]] = 1;
+		for (int i = 1; i <= N; i++)
+			if (!selc[i]) c[ncand++] = i;
+
+		for (int i = 0; i < ncand; i++)
+		{
+			a[k] = c[i];
+
+			if (d + D[a[k - 1]][a[k]] < ans) // 가지치기
+				solve(k, d + D[a[k - 1]][a[k]]);
+		}
+	}
+}
+
+
+
+void main()
+{
+	int before = clock();
+
+	int T;
+	cin >> T;
+
+	for (int tc = 1; tc <= 10; ++tc)
+	{
+		cnt = 0;
+		ans = 0x12345678;
+
+		cin >> N;
+
+		cin >> x[0] >> y[0] >> x[N + 1] >> y[N + 1];
+
+		for (int i = 1; i <= N; i++)
+			cin >> x[i] >> y[i];
+
+		for (int i = 0; i < N + 1; i++)
+			for (int j = i + 1; j < N + 2; j++)
+				D[i][j] = D[j][i] = getD(x[i], x[j], y[i], y[j]);
+
+
+		solve(0, 0);
+
+		printf("#%d %d %d\n", tc, ans, cnt);
+	}
+
+	printf("%.2f\n", (double)(clock() - before) / CLOCKS_PER_SEC);
+}
+
+
+

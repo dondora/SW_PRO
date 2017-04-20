@@ -1,0 +1,105 @@
+//  모든 정점 경유 최단거리 순열 완전검색
+
+#include <iostream>
+#include <time.h>
+using namespace std;
+
+int HX, HY, CX, CY;
+int clnt[100][2] = { 0, };
+int ans;
+int cnt;
+
+int getD(int x1, int y1, int x2, int y2)
+{
+	int dx = x1 - x2;
+	dx = dx < 0 ? dx * -1 : dx;
+	int dy = y1 - y2;
+	dy = dy < 0 ? dy * -1 : dy;
+
+	return dx + dy;
+}
+
+void calc(int a[], int k)
+{
+	int t = 0;
+
+	for (int i = 1; i < k; i++)
+		t += getD(clnt[a[i]][0], clnt[a[i]][1], clnt[a[i + 1]][0], clnt[a[i + 1]][1]);
+
+	t += getD(clnt[a[1]][0], clnt[a[1]][1], CX, CY);
+	t += getD(clnt[a[k]][0], clnt[a[k]][1], HX, HY);
+
+	if (ans > t) ans = t;
+}
+
+
+void construct(int a[], int k, int n, int c[], int* ncand)
+{
+	int in_perm[100] = { 0, };
+
+	for (int i = 0; i < k; i++)
+		in_perm[a[i]] = 1;
+
+	*ncand = 0;
+
+	for (int i = 1; i <= n; i++)
+		if (in_perm[i] == 0)
+		{
+			c[*ncand] = i;
+			(*ncand)++;
+		}
+}
+
+void backtracking(int a[], int k, int input)
+{
+	cnt++;
+
+	int c[100] = { 0, };
+	int ncand = 0;
+
+	if (k == input) calc(a, k);
+	else
+	{
+		k++;
+		construct(a, k, input, c, &ncand);
+		for (int i = 0; i < ncand; i++)
+		{
+			a[k] = c[i];
+			backtracking(a, k, input);
+		}
+	}
+}
+
+
+int main()
+{
+	int before = clock();
+
+	int T;
+
+	cin >> T;
+
+	for (int tc = 1; tc <= T; tc++)
+	{
+		int N;
+
+		cnt = 0;
+		ans = 0x7FFFFFFF;
+
+		cin >> N >> CX >> CY >> HX >> HY;
+
+		for (int i = 1; i <= N; i++)
+			cin >> clnt[i][0] >> clnt[i][1];
+
+		int a[100] = { 0 };
+		backtracking(a, 0, N);
+
+		cout << "#" << tc << " " << ans << "  ";
+		cout << cnt << endl;
+	}
+
+	printf("%.2f\n", (double)(clock() - before) / CLOCKS_PER_SEC);
+
+	return 0;
+}
+

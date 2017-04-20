@@ -1,0 +1,73 @@
+
+//병원짓기
+//N개의 마을이 있고 마을에 병원을 짓는 비용이 주어진다.
+//도로로 직접 연결된 이웃 마을에서 병원 진료를 받을 수 있다.
+//도로로 연결된 이웃 마을의 관계가 주어진다.
+//모든 마을의 사람들이 병원 진료를 받을 수 있도록 최소 비용으로 병원을 짓고자 할때 최소 비용이 얼마인가?
+//당연히 자기 마을에 병원이 있으면 자기 마을에서 병원 진료를 받을 수 있다.
+
+//
+//입력예
+//5
+//100 70 50 80 10
+//0 1 0 1 0 
+//1 0 1 0 1
+//0 1 0 0 0
+//1 0 0 0 0
+//0 1 0 0 0
+//출력예
+//140
+
+#include <iostream>
+using namespace std;
+
+int map[21][21], cost[21], a[21];
+int cnt, N, ans = 12345678;
+
+void solve(int k)
+{
+	cnt++;
+	if (k == N)
+	{
+		int tcnt = 0, tsum = 0;
+		int con[21] = { 0 };
+
+		for (int i = 1; i <= N; i++)
+		{
+			if (a[i])
+			{
+				con[i] = 1;
+				for (int j = 1; j <= N; j++)
+					if (map[i][j]) con[j] = 1;
+				tsum += cost[i];
+			}
+		}
+
+		for (int i = 1; i <= N; i++) tcnt += con[i];
+
+		if (tcnt == N && ans > tsum) ans = tsum;
+	}
+	else
+	{
+		k++;
+
+		a[k] = 1; solve(k);
+		a[k] = 0; solve(k);
+	}
+}
+
+void main()
+{
+	cin >> N;
+	for (int i = 1; i <= N; i++)
+		cin >> cost[i];
+
+	for (int i = 1; i <= N; i++)
+		for (int j = 1; j <= N; j++)
+			cin >> map[i][j];
+
+	solve(0);
+	cout << ans << " " << cnt << endl;
+}
+
+
