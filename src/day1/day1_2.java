@@ -1,3 +1,4 @@
+package day1;
 // 최대상금
 import java.io.File;
 import java.io.FileNotFoundException;
