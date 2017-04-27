@@ -1,0 +1,273 @@
+
+처음 화면	문제 모음	순위	채점 상황 열람
+"미라콤아이앤씨 PRO등급 3차 모의고사" 4월26일(수) 18:00 ~ 4월27일(목) 06:00 , 정답 코드 공개, 4월27일(목) 09:00~24:00
+문제 번호 B: [SOL] 마라톤 대회
+시간 제한: 1 Sec  메모리 제한: 128 MB
+제출: 18  해결 문제 수: 5
+[제출]
+문제 설명
+ 마라톤 선수인 기연이는 마라톤 코스를 만드는 것을 좋아한다. 그녀는 가장 최근에 순서대로 방문해야 하는 N개의 체크포인트(1≤N≤100,000)로 구성된 코스를 설계했다.
+
+ 
+마라톤 선수들 중 일부는 전체 코스를 달릴 체력을 가지고 있지 않다. 그래서 전체 코스 중 일부 하위 코스만 달리기도 한다. 하위 코스란 전체 경로의 한 체크포인트에서 시작해서 연속된 구간을 의미한다. 일부 게으른 마라톤 선수들은 하위 코스를 달리는 중에 1개의 체크포인트를 건너 뛰고 달린다. 시작 체크포인트와 종료 체크포인트는 건너 뛰지 않는다.
+ 
+최고의 마라톤 코스를 만들기 위해 그녀는 현재 코스에서 일부 체크포인트 위치를 변경했을 때 파급 효과를 조사하려고 한다. 체크포인트 위치를 변경했을 때 하위 경로의 거리가 어떻게 되는지 정보가 필요하다. 일을 어렵게 만드는 건 1개의 체크포인트를 건너 뛰는 걸 고려해야 하기 때문이다. 여러 거리 중 최소 거리를 선택하려고 한다.
+ 
+참고로, 마라톤 대회는 수원시내 한복판에서 진행될 예정이기 때문에 거리는 “맨하탄 거리”로 측정한다. 위치(X1, Y1)와 위치(X2, Y2)의 거리는 |X1-X2| + |Y1-Y2|이다. (|X|는 절대값 기호이다)
+* C/C++ 솔루션은 다음 코드를 참조하시오.
+ 
+//재귀함수이용
+#include <stdio.h>
+int N;//체크포인트개수
+int Q;//명령개수
+int X[100000 + 10];
+int Y[100000 + 10];
+int tree_dist[1 << 18];//거리
+int tree_delta[1 << 18];//절약되는최대값
+void input_data(void){
+      register int i;
+      scanf("%d %d", &N, &Q);
+      for (i = 1; i <= N; i++){
+            scanf("%d %d", &X[i], &Y[i]);
+      }
+}
+int cal_dist(int a, int b){
+      register int distx, disty;
+      distx = X[a] - X[b];
+      if (distx < 0) distx = -distx;
+      disty = Y[a] - Y[b];
+      if (disty < 0) disty = -disty;
+      return distx + disty;
+}
+#define MAX(a, b) ((a)>(b) ? (a):(b))
+void build(int node, int s, int e){
+      if (s == e){//실제값이저장됨
+            if(s < N) tree_dist[node] = cal_dist(s, s + 1);
+            else tree_dist[node] = 0;
+            if (s < N - 1) tree_delta[node] = cal_dist(s, s + 1) + cal_dist(s + 1, s + 2) - cal_dist(s, s + 2);
+            else tree_delta[node] = 0;
+            return;
+      }
+      build(node * 2, s, (s + e) / 2);
+      build(node * 2 + 1, (s + e) / 2 + 1, e);
+      tree_dist[node] = tree_dist[node * 2] + tree_dist[node * 2 + 1];
+      tree_delta[node] = MAX(tree_delta[node * 2], tree_delta[node * 2 + 1]);
+}
+int query_dist(int node, int s, int e, int qs, int qe){
+      if (qe < s || e < qs) return 0;
+      if (qs <= s && e <= qe){
+            return tree_dist[node];
+      }
+      return query_dist(node * 2, s, (s + e) / 2, qs, qe) +
+            query_dist(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+}
+int query_delta(int node, int s, int e, int qs, int qe){
+      if (qe < s || e < qs) return 0;
+      if (qs <= s && e <= qe){
+            return tree_delta[node];
+      }
+      int L = query_delta(node * 2, s, (s + e) / 2, qs, qe);
+      int R = query_delta(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+      return MAX(L, R);
+}
+void update_dist(int node, int s, int e, int qs, int qe){
+      if (qe < s || e < qs) return;
+      if (s == e){
+            if (s < N) tree_dist[node] = cal_dist(s, s + 1);
+            return;
+      }
+      update_dist(node * 2, s, (s + e) / 2, qs, qe);
+      update_dist(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+      tree_dist[node] = tree_dist[node * 2] + tree_dist[node * 2 + 1];
+}
+void update_delta(int node, int s, int e, int qs, int qe){
+      if (qe < s || e < qs) return;
+      if (s == e){
+            if (s < N - 1) tree_delta[node] = cal_dist(s, s + 1) + cal_dist(s + 1, s + 2) - cal_dist(s, s + 2);
+            return;
+      }
+      update_delta(node * 2, s, (s + e) / 2, qs, qe);
+      update_delta(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+      tree_delta[node] = MAX(tree_delta[node * 2], tree_delta[node * 2 + 1]);
+}
+void solve(void){
+      register int i, dist, max;
+      int A, B, C;
+      char cmd;
+      for (i = 0; i < Q; i++){
+            scanf(" %c", &cmd);
+            if (cmd == 'Q'){
+                  scanf("%d %d", &A, &B);
+                  dist = query_dist(1, 1, N, A, B - 1);
+                  max = query_delta(1, 1, N, A, B - 2);
+                  printf("%d\n", dist - max);
+            }
+            else{
+                  scanf("%d %d %d", &A, &B, &C);
+                  X[A] = B; Y[A] = C;
+                  dist = A - 1; if (dist < 1) dist = 1;
+                  update_dist(1, 1, N, dist, A);
+                  dist = A - 2; if (dist < 1) dist = 1;
+                  update_delta(1, 1, N, dist, A);
+            }
+      }
+}
+int main(void){
+      input_data();
+      build(1, 1, N);
+      solve();
+      return 0;
+}
+입력
+ 첫 번째 줄에는 N과 Q(1≤Q≤100,000)가 공백으로 구분되어 입력된다
+
+두 번째 줄부터 N줄에 걸쳐 체크포인트의 위치 X, Y가 공백으로 구분되어 입력된다. 입력 순서는 마라톤 경로에 따라 방문해야 하는 순서이다. 모든 좌표는 -1,000 ~ 1,000 범위이다.
+다음 줄부터 Q줄에 걸쳐 주어진 순서대로 처리 할 명령이 입력된다. 명령은 갱신(updates)을 하거나 조회(queries)를 하는 것이다.
+갱신은 “U I X Y”형태로 입력되며, 조회는 “Q I J” 형식으로 입력된다.
+“U I X Y” 형식에서 I(1≤I≤N)는 체크포인트 번호이며 (X, Y)위치로 변경됨을 나타낸다.
+“Q I J” 형식은 I번 체크포인트에서 시작해서 J번 체크포인트까지의 최소 거리의 조회를 나타낸다. 물론, I~J중 1개의 체크포인트는 건너 뛰고 달린다는 걸 고려해야 하며 I≤J 이고 I, J는 건너뛰지 않는다.
+출력
+ 각 조회(queries)의 결과를 출력한다.
+
+입력 예시
+5 5
+-4 4
+-5 -3
+-1 5
+-3 4
+0 5
+Q 1 5
+U 4 0 1
+U 4 -1 1
+Q 2 4
+Q 1 4
+출력 예시
+11
+8
+8
+도움말
+ 
+
+* JAVA 솔루션은 다음 코드를 참조하시오.
+ 
+import java.util.Scanner;
+ 
+//재귀함수이용
+public class Main {
+      static int N;//체크포인트개수
+      static int Q;//명령개수
+      static int X[] = new int [100000 + 10];
+      static int Y[] = new int [100000 + 10];
+      static int tree_dist[] = new int [1 << 18];//거리
+      static int tree_delta[] = new int [1 << 18];//절약되는최대값
+      static Scanner sc;
+      static void input_data(){
+            int i;
+            N = sc.nextInt();
+            Q = sc.nextInt();
+            for (i = 1; i <= N; i++){
+                  X[i] = sc.nextInt();
+                  Y[i] = sc.nextInt();
+            }
+      }
+      static int cal_dist(int a, int b){
+            int distx, disty;
+            distx = X[a] - X[b];
+            if (distx < 0) distx = -distx;
+            disty = Y[a] - Y[b];
+            if (disty < 0) disty = -disty;
+            return distx + disty;
+      }
+      static int MAX(int a, int b){
+            return a > b ? a : b;
+      }
+      static void build(int node, int s, int e){
+            if (s == e){//실제값이저장됨
+                  if(s < N) tree_dist[node] = cal_dist(s, s + 1);
+                  else tree_dist[node] = 0;
+                  if (s < N - 1) tree_delta[node] = cal_dist(s, s + 1) + cal_dist(s + 1, s + 2) - cal_dist(s, s + 2);
+                  else tree_delta[node] = 0;
+                  return;
+            }
+            build(node * 2, s, (s + e) / 2);
+            build(node * 2 + 1, (s + e) / 2 + 1, e);
+            tree_dist[node] = tree_dist[node * 2] + tree_dist[node * 2 + 1];
+            tree_delta[node] = MAX(tree_delta[node * 2], tree_delta[node * 2 + 1]);
+      }
+      static int query_dist(int node, int s, int e, int qs, int qe){
+            if (qe < s || e < qs) return 0;
+            if (qs <= s && e <= qe){
+                  return tree_dist[node];
+            }
+            return query_dist(node * 2, s, (s + e) / 2, qs, qe) +
+                  query_dist(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+      }
+      static int query_delta(int node, int s, int e, int qs, int qe){
+            if (qe < s || e < qs) return 0;
+            if (qs <= s && e <= qe){
+                  return tree_delta[node];
+            }
+            int L = query_delta(node * 2, s, (s + e) / 2, qs, qe);
+            int R = query_delta(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+            return MAX(L, R);
+      }
+      static void update_dist(int node, int s, int e, int qs, int qe){
+            if (qe < s || e < qs) return;
+            if (s == e){
+                  if (s < N) tree_dist[node] = cal_dist(s, s + 1);
+                  return;
+            }
+            update_dist(node * 2, s, (s + e) / 2, qs, qe);
+            update_dist(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+            tree_dist[node] = tree_dist[node * 2] + tree_dist[node * 2 + 1];
+      }
+      static void update_delta(int node, int s, int e, int qs, int qe){
+            if (qe < s || e < qs) return;
+            if (s == e){
+                  if (s < N - 1) tree_delta[node] = cal_dist(s, s + 1) + cal_dist(s + 1, s + 2) - cal_dist(s, s + 2);
+                  return;
+            }
+            update_delta(node * 2, s, (s + e) / 2, qs, qe);
+            update_delta(node * 2 + 1, (s + e) / 2 + 1, e, qs, qe);
+            tree_delta[node] = MAX(tree_delta[node * 2], tree_delta[node * 2 + 1]);
+      }
+      static void solve(){
+            int i, dist, max;
+            int A, B, C;
+            char cmd;
+            for (i = 0; i < Q; i++){
+                  cmd = sc.next().charAt(0);
+                  if (cmd == 'Q'){
+                        A = sc.nextInt();
+                        B = sc.nextInt();
+                        dist = query_dist(1, 1, N, A, B - 1);
+                        max = query_delta(1, 1, N, A, B - 2);
+                        System.out.println(dist - max);
+                  }
+                  else{
+                        A = sc.nextInt();
+                        B = sc.nextInt();
+                        C = sc.nextInt();
+                        X[A] = B; Y[A] = C;
+                        dist = A - 1; if (dist < 1) dist = 1;
+                        update_dist(1, 1, N, dist, A);
+                        dist = A - 2; if (dist < 1) dist = 1;
+                        update_delta(1, 1, N, dist, A);
+                  }
+            }
+      }
+      public static void main(String[] args) {
+            sc = new Scanner(System.in);
+            input_data();
+            build(1, 1, N);
+            solve();
+            sc.close();
+      }
+}
+[제출]
+
+
+미라콤 모의고사 운영 문의
+(주)코스큐 (02-6951-1355, kosqinfo@kosq.org)
+장애 및 패스워드 초기화 요청
+(주)윌텍 (010-3342-9323, keyseek@naver.com)
